@@ -13,11 +13,14 @@ module.exports = {
 
   createUser: (req, res) => {
     if (req.body.password !== req.body.password2) {
-      res.json({ message: "Error", errors: ["Passwords do not match"] });
+      res.json({
+        message: "Error",
+        errors: { password: "Passwords do not match" }
+      });
     } else if (req.body.password.length !== 0 && req.body.password.length < 6) {
       res.json({
         message: "Error",
-        errors: ["Password must be at least 6 characters in length"]
+        errors: { password: "Must be at least 6 chars" }
       });
     } else {
       const hash = bcrypt.hashSync(req.body.password, 10);
@@ -30,9 +33,7 @@ module.exports = {
       user.save(err => {
         let errors = [];
         if (err) {
-          for (let key in err.errors) {
-            errors.push(err.errors[key].message);
-          }
+          errors = err.errors;
           res.json({ message: "Error", errors });
         } else {
           res.json({ message: "Success", user });
@@ -43,10 +44,16 @@ module.exports = {
 
   loginUser: (req, res) => {
     User.findOne({ email: req.body.email }, (err, user) => {
-      if (user.status === "banned") {
-        res.json({ message: "Error", error: "This account is locked" });
-      } else if (user === null || err) {
-        res.json({ message: "Error", error: "Invalid Credentials" });
+      if (user === null || err) {
+        res.json({
+          message: "Error",
+          errors: [{ login: "Invalid Credentials" }]
+        });
+      } else if (user.status === "banned") {
+        res.json({
+          message: "Error",
+          errors: [{ login: "This account is locked" }]
+        });
       } else if (!bcrypt.compareSync(req.body.password, user.password)) {
         if (user.pwAttempts > 4) {
           user.status = "banned";
@@ -57,19 +64,26 @@ module.exports = {
             user.save(err => console.log(err));
           }, 360000);
           res.json({
-            message: "You have been banned for 1 hour due to exessive failure."
+            message: "error",
+            errors: [
+              {
+                login:
+                  "You have been banned for 1 hour due to exessive failure."
+              }
+            ]
           });
         } else {
           user.pwAttempts += 1;
           user.save(err => console.log(err));
           res.json({
             message: "Error",
-            error: "Invalid Credentials",
+            errors: [{ login: "Invalid Credentials" }],
             pwAttempts: user.pwAttempts
           });
         }
       } else {
         user.status = "loggedIn";
+        user.pwAttempts = 0;
         user.save(err => console.log(err));
         res.json({ message: "Sucess", user });
       }
@@ -91,6 +105,13 @@ module.exports = {
       err
         ? res.json({ message: "error", err })
         : res.json({ message: "success, users deleted" });
+    });
+  },
+  findOneUser: (req, res) => {
+    User.findOne({ _id: req.params.id }, (err, user) => {
+      err
+        ? res.json({ message: "error", err })
+        : res.json({ message: "success", user });
     });
   }
 };

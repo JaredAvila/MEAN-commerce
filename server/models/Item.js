@@ -36,6 +36,10 @@ const itemSchema = new mongoose.Schema(
       type: String,
       required: [true, "Must provide location. City, State"]
     },
+    image: {
+      type: String,
+      required: [true, "Must provide an image URL"]
+    },
     owner: {
       type: String
     },

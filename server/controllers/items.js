@@ -9,6 +9,7 @@ module.exports = {
       description: req.body.description,
       price: req.body.price,
       location: req.body.location,
+      image: req.body.image,
       owner: req.body.id
     });
     newItem.save((err, item) => {
@@ -29,29 +30,47 @@ module.exports = {
   },
   getAll(req, res) {
     Item.find({}, (err, items) => {
-      if (err) {
-        res.json({ message: "error", err });
-      } else {
-        res.json({ message: "sucess", items });
-      }
+      err
+        ? res.json({ message: "error", err })
+        : res.json({ message: "success", items });
     });
   },
   getItem: (req, res) => {
     Item.findOne({ _id: req.body.itemId }, (err, item) => {
-      if (err) {
-        res.json({ message: "error", err });
-      } else {
-        res.json({ message: "success", item });
-      }
+      err
+        ? res.json({ message: "error", err })
+        : res.json({ message: "success", item });
     });
+  },
+  getRandomItem: (req, res) => {
+    let randomItem = {};
+    //Creates an uppercase, single charater string from a randomly generated unicode value as the 'title' for .findOne
+    Item.findOne(
+      {
+        title: new RegExp(
+          String.fromCharCode(Math.floor(Math.random() * (90 - 65)) + 65),
+          "i"
+        )
+      },
+      (err, item) => {
+        if (err) {
+          res.json({ message: "error", err });
+        } else {
+          randomItem = item;
+          if (randomItem === null) {
+            res.json({ message: "error" });
+          } else {
+            res.json({ message: "success", item: randomItem });
+          }
+        }
+      }
+    );
   },
   searchItems(req, res) {
     Item.find({ title: new RegExp(req.body.title, "i") }, (err, items) => {
-      if (err) {
-        res.json({ message: "error", err });
-      } else {
-        res.json({ message: "success", items });
-      }
+      err
+        ? res.json({ message: "error", err })
+        : res.json({ message: "success", items });
     });
   },
   editItem(req, res) {
@@ -77,14 +96,11 @@ module.exports = {
           if (err) {
             res.json({ message: "error", err });
           } else {
-            // do stuff
             for (let i = 0; i < user.items.length; i++) {
-              console.log(user.items[i]._id, req.params.itemId);
               if (user.items[i]._id == req.params.itemId) {
-                console.log("found it! ", user.items[i]);
                 user.items.splice(i, 1);
               } else {
-                console.log("Item not found ");
+                res.json({ message: "Item not found " });
               }
             }
             user.save(err => {
