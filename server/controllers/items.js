@@ -10,19 +10,19 @@ module.exports = {
       price: req.body.price,
       location: req.body.location,
       image: req.body.image,
-      owner: req.body.id
+      owner: req.body.userId
     });
     newItem.save((err, item) => {
       if (err) {
-        res.json({ message: "error", error: err.errors });
+        res.json({ message: "error", errors: err.errors });
       } else {
-        User.findOne({ _id: req.body.id }, (err, user) => {
+        User.findOne({ _id: req.body.userId }, (err, user) => {
           if (user === null || err) {
             res.json({ message: "error", error: "Something went wrong" });
           } else {
             user.items.push(newItem);
             user.save(err => console.log(err));
-            res.json({ message: "success", user, item });
+            res.json({ message: "success" });
           }
         });
       }
