@@ -20,6 +20,11 @@ module.exports = app => {
     users.loginUser(req, res);
   });
 
+  // GET LOGGED IN USER
+  app.get("/api/getUser", (req, res) => {
+    users.getloggedUser(req, res);
+  });
+
   //LOGOUT USER
   app.post("/api/logout", (req, res) => {
     users.logOutUser(req, res);

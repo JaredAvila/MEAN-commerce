@@ -58,10 +58,10 @@ module.exports = {
         if (user.pwAttempts > 4) {
           user.status = "banned";
           user.pwAttempts = 0;
-          user.save(err => console.log(err));
+          user.save(err => console.log({ err }));
           setTimeout(() => {
             user.status = "loggedOut";
-            user.save(err => console.log(err));
+            user.save(err => console.log({ err }));
           }, 360000);
           res.json({
             message: "error",
@@ -74,7 +74,7 @@ module.exports = {
           });
         } else {
           user.pwAttempts += 1;
-          user.save(err => console.log(err));
+          user.save(err => console.log({ err }));
           res.json({
             message: "Error",
             errors: [{ login: "Invalid Credentials" }],
@@ -84,8 +84,27 @@ module.exports = {
       } else {
         user.status = "loggedIn";
         user.pwAttempts = 0;
-        user.save(err => console.log(err));
-        res.json({ message: "Sucess", user });
+        user.save(err => console.log({ err }));
+        req.session.userId = user._id;
+        req.session.userName = user.firstName;
+        req.session.status = user.status;
+        res.json({
+          message: "Sucess"
+        });
+      }
+    });
+  },
+  getloggedUser: (req, res) => {
+    User.findOne({ _id: req.session.userId }, (err, user) => {
+      if (user == null) {
+        res.json({ error: "error", err });
+      } else {
+        res.json({
+          sucess: "sucess",
+          userName: user.firstName,
+          userId: user._id,
+          userStatus: user.status
+        });
       }
     });
   },
@@ -95,8 +114,11 @@ module.exports = {
         res.json({ message: "error", error: "User could not be logged out" });
       } else {
         user.status = "loggedOut";
-        user.save(err => console.log(err));
-        res.json({ message: "success", user });
+        user.save(err => console.log({ err }));
+        req.session.userId = "";
+        req.session.userName = "";
+        req.session.status = "loggedOut";
+        res.json({ message: "success" });
       }
     });
   },
