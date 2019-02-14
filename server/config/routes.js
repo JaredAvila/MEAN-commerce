@@ -76,6 +76,11 @@ module.exports = app => {
   app.delete("/api/item/:itemId/:userId", (req, res) => {
     items.deleteItem(req, res);
   });
+  
+  //DELETE ALL ITEMS
+  app.get("/api/removeAllItems", (req, res) => {
+    items.removeAllItems(req, res);
+  });
 
   //REDIRECT TO ANGULAR IF NO OTHER ROUTES ARE HIT
   app.all("*", (req, res, next) => {

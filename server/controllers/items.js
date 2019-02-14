@@ -21,7 +21,7 @@ module.exports = {
             res.json({ message: "error", error: "Something went wrong" });
           } else {
             user.items.push(newItem);
-            user.save(err => console.log(err));
+            user.save(err => {});
             res.json({ message: "success" });
           }
         });
@@ -82,34 +82,55 @@ module.exports = {
         item["description"] = req.body.description;
         item["price"] = req.body.price;
         item["location"] = req.body.location;
-        item.save(err => console.log(err));
-        res.json({ message: "success", item });
+        item["image"] = req.body.image;
+        item.save(err => {
+          User.findOne({ _id: req.body.owner }, (err, user) => {
+            if (err || user == null) {
+            } else {
+              for (let i = 0; i < user.items.length; i++) {
+                if (user.items[i]._id == req.body.id) {
+                  user.items.splice(i, 1);
+                  user.items.push(item);
+                }
+              }
+              user.save(err => {});
+
+              res.json({ message: "success" });
+            }
+          });
+        });
       }
     });
   },
   deleteItem(req, res) {
-    Item.findByIdAndRemove(req.params.itemId, err => {
-      if (err) {
-        res.json({ message: "error", error: "something went wrong" });
+    Item.findByIdAndRemove(req.params.itemId, (err, item) => {
+      if (err || item == null) {
+        res.json({
+          message: "error",
+          error: "something went wrong finding the item"
+        });
       } else {
         User.findOne({ _id: req.params.userId }, (err, user) => {
-          if (err) {
-            res.json({ message: "error", err });
+          if (err || user == null) {
+            res.json({ message: "error finding user", err });
           } else {
             for (let i = 0; i < user.items.length; i++) {
               if (user.items[i]._id == req.params.itemId) {
                 user.items.splice(i, 1);
-              } else {
-                res.json({ message: "Item not found " });
               }
             }
-            user.save(err => {
-              console.log(err);
-            });
-            res.json({ message: "success, item has been deleted", user });
+            user.save(err => {});
           }
         });
       }
+    });
+    res.json({ message: "success" });
+  },
+  removeAllItems: (req, res) => {
+    Item.remove({}, err => {
+      err
+        ? res.json({ message: "error", err })
+        : res.json({ message: "success, users deleted" });
     });
   }
 };

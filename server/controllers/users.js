@@ -58,10 +58,10 @@ module.exports = {
         if (user.pwAttempts > 4) {
           user.status = "banned";
           user.pwAttempts = 0;
-          user.save(err => console.log({ err }));
+          user.save(err => {});
           setTimeout(() => {
             user.status = "loggedOut";
-            user.save(err => console.log({ err }));
+            user.save(err => {});
           }, 360000);
           res.json({
             message: "error",
@@ -74,7 +74,7 @@ module.exports = {
           });
         } else {
           user.pwAttempts += 1;
-          user.save(err => console.log({ err }));
+          user.save(err => {});
           res.json({
             message: "Error",
             errors: [{ login: "Invalid Credentials" }],
@@ -84,7 +84,7 @@ module.exports = {
       } else {
         user.status = "loggedIn";
         user.pwAttempts = 0;
-        user.save(err => console.log({ err }));
+        user.save(err => {});
         req.session.userId = user._id;
         req.session.userName = user.firstName;
         req.session.status = user.status;
@@ -103,7 +103,8 @@ module.exports = {
           sucess: "sucess",
           userName: user.firstName,
           userId: user._id,
-          userStatus: user.status
+          userStatus: user.status,
+          userItems: user.items
         });
       }
     });
@@ -114,7 +115,7 @@ module.exports = {
         res.json({ message: "error", error: "User could not be logged out" });
       } else {
         user.status = "loggedOut";
-        user.save(err => console.log({ err }));
+        user.save(err => {});
         req.session.userId = "";
         req.session.userName = "";
         req.session.status = "loggedOut";
