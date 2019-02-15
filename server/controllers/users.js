@@ -36,6 +36,9 @@ module.exports = {
           errors = err.errors;
           res.json({ message: "Error", errors });
         } else {
+          req.session.userId = user._id;
+          req.session.userName = user.firstName;
+          req.session.status = user.status;
           res.json({ message: "Success", user });
         }
       });
@@ -102,6 +105,7 @@ module.exports = {
         res.json({
           sucess: "sucess",
           userName: user.firstName,
+          userEmail: user.email,
           userId: user._id,
           userStatus: user.status,
           userItems: user.items
